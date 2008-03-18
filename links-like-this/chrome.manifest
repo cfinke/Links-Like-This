@@ -1,0 +1,6 @@
+content     links-like-this     jar:chrome/links-like-this.jar!/content/
+skin        links-like-this     classic             jar:chrome/links-like-this.jar!/skin/
+
+locale      links-like-this     en-US               jar:chrome/links-like-this.jar!/locale/en-US/
+
+overlay     chrome://browser/content/browser.xul                chrome://links-like-this/content/overlay.xul
