@@ -4,3 +4,4 @@ skin        links-like-this     classic             jar:chrome/links-like-this.j
 locale      links-like-this     en-US               jar:chrome/links-like-this.jar!/locale/en-US/
 
 overlay     chrome://browser/content/browser.xul                chrome://links-like-this/content/overlay.xul
+style       chrome://browser/content/browser.xul                chrome://links-like-this/skin/panel.css

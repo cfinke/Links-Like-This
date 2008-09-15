@@ -5,10 +5,39 @@
 		<![CDATA[
 		
 		addEventListener("load", function (event) { LINKSLIKETHIS.init(); }, false);
-
+		addEventListener("select", function () { LINKSLIKETHIS.checkForPanel(); }, false);
+		addEventListener("DOMContentLoaded", function () { LINKSLIKETHIS.checkForPanel(); }, false);
+		
 		]]>
 	</script>
 	<stringbundleset id="stringbundleset">
 		<stringbundle id="links-like-this-bundle" src="chrome://links-like-this/locale/locale.properties" />
 	</stringbundleset>
+	<popupset id="mainPopupSet">
+		<panel
+		       id="links-like-this-confirmation" 
+		       level="parent" 
+		       noautohide="true">
+			<vbox class="container">
+				<label class="header" value="Links Confirmation" />
+				<label id="llt-num-links" value="" />
+			</vbox>
+			<vbox class="buttons">
+				<vbox class="full-go">
+					<button oncommand="LINKSLIKETHIS.confirmOpen();" label="Yes, open all of these links" />
+				</vbox>
+				<!--
+				<vbox class="semi-go">
+					<button label="No, I want more links" oncommand="LINKSLIKETHIS.more();" />
+				</vbox>
+				<vbox class="semi-stop">
+					<button label="No, I want fewer links" oncommand="LINKSLIKETHIS.less();"/>
+				</vbox>
+				-->
+				<vbox class="full-stop">
+					<button oncommand="LINKSLIKETHIS.cancelOpen();" label="No, don't open any of these links" />
+				</vbox>
+			</vbox>
+		</panel>
+	</popupset>
 </overlay>

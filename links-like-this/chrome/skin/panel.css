@@ -1,0 +1,40 @@
+#links-like-this-confirmation .container {
+    padding: 2em;
+}
+
+#links-like-this-confirmation .container,
+#links-like-this-confirmation .buttons {
+    background-color: #222;
+    color: #fff;
+}
+
+#links-like-this-confirmation .buttons vbox {
+    border-width: 0px;/*2px 0px 2px 0px;*/
+    border-style: solid;
+    margin-top: 8px;
+}
+
+#links-like-this-confirmation label.header {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#links-like-this-confirmation .full-go {
+    border-color: #6a6;
+    background-color: #060;
+}
+
+#links-like-this-confirmation .semi-go {
+    border-color: #0a0;
+    background-color: #696;
+}
+
+#links-like-this-confirmation .semi-stop {
+    border-color: #a00;
+    background-color: #933;
+}
+
+#links-like-this-confirmation .full-stop {
+    border-color: #a66;
+    background-color: #600;
+}

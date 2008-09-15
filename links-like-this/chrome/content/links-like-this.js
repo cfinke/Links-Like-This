@@ -1,7 +1,5 @@
  var LINKSLIKETHIS = {
 	strings : null,
-	currentModel : null,
-	styleHistory : [],
 	
 	init : function () {
 		this.strings = document.getElementById("links-like-this-bundle");
@@ -11,7 +9,6 @@
 	enableTheseLinks : function () {
 		var cm = document.getElementById("contentAreaContextMenu");
 		cm.addEventListener("popupshowing", function (event) { LINKSLIKETHIS.addMenuItem(event); }, false);
-		
 	},
 	
 	addMenuItem : function (event) {
@@ -21,26 +18,21 @@
 			existingOption.parentNode.removeChild(existingOption);
 		}
 		
-		if ((gContextMenu.target.nodeName == 'A') || (gContextMenu.target.parentNode.nodeName == 'A')){
-			if (gContextMenu.target.nodeName == 'A'){
-				this.currentModel = gContextMenu.target;
-			}
-			else {
-				this.currentModel = gContextMenu.target.parentNode;
-			}
-			
-			if (!this.currentModel.href) {
+		var theNode = gContextMenu.target;
+		
+		while (theNode != content.document.body && theNode.nodeName != 'A') {
+			theNode = theNode.parentNode;
+		}
+		
+		if (theNode && theNode.nodeName == 'A') {
+			if (!theNode.href) {
 				return;
 			}
 			
-			var sstring = this.currentModel.parentNode.parentNode.parentNode.nodeName;
-			sstring += '/';
-			sstring += this.currentModel.parentNode.parentNode.nodeName;
-			sstring += '/';
-			sstring += this.currentModel.parentNode.nodeName;
+			content.document.modelNode = theNode;
 			
 			var menu = document.getElementById("contentAreaContextMenu");
-
+			
 			var option = document.createElement('menuitem');
 			option.setAttribute("id","links-like-this-option");
 			option.setAttribute("label",this.strings.getString("linksLikeThis.menuOption"));
@@ -51,12 +43,60 @@
 		}
 	},
 	
-	findSimilarLinks : function (strictness){
+	linkEventHandler : function (event) {
+		return true;
+		var theNode = event.target;
+		
+		while (theNode != document.body && theNode.nodeName != 'A') {
+			theNode = theNode.parentNode;
+		}
+		
+		if (theNode && theNode.nodeName == 'A') {
+			event.stopPropagation();
+			event.preventDefault();
+		
+			var link = event.target;
+		
+			LINKSLIKETHIS.toggleLinkToBeOpened(theNode, true);
+		}
+	},
+	
+	toggleLinkToBeOpened : function (link, modifyLinkSet) {
+		if (link.toBeOpened) {
+			link.style.backgroundColor = link.styleHistory.backgroundColor;
+			
+			if (modifyLinkSet) {
+				for (var i = 0; i < content.document.linkSet.length; i++) {
+					if (content.document.linkSet[i].href == link.href) {
+						content.document.linkSet = content.document.linkSet.splice(i, 1);
+						break;
+					}
+				}
+			}
+		}
+		else {
+			link.styleHistory = {};
+			
+			link.styleHistory.backgroundColor = link.style.backgroundColor;
+			link.style.backgroundColor = '#ff6';
+			
+			if (modifyLinkSet) {
+				content.document.linkSet.push(link);
+				alert(content.document.linkSet);
+			}
+		}
+		
+		link.toBeOpened = !link.toBeOpened;
+	},
+	
+	findSimilarLinks : function (strictness) {
 		if (strictness == null) {
 			strictness = 3;
 		}
+		
+		selectAll = false;
 
-		var m = this.currentModel;
+		var m = content.document.modelNode;
 		
 		var contextNode = m;
 		
@@ -64,7 +104,7 @@
 			contextNode = contextNode.parentNode;
 		}
 		
-		var linkSet = [];
+		content.document.linkSet = [];
 		
 		var xpath = "//";
 		
@@ -94,7 +134,9 @@
 		
 		var links = content.document.evaluate(xpath, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 		
-		var stylePoints = { "font-size" : LINKSLIKETHIS.getStyle(m, "font-size") };
+		var stylePoints = {};
+		stylePoints["font-size"] = this.getStyle(m, "font-size");
+		
 		var shouldBeVisited = this.historyService.isVisitedURL(m.href);
 		
 		linkLoop : do {
@@ -108,52 +150,93 @@
 						}
 					}
 				
-					for (var i = 0; i < linkSet.length; i++){
-						if (linkSet[i].href == link.href) {
+					for (var i = 0; i < content.document.linkSet.length; i++){
+						if (content.document.linkSet[i].href == link.href) {
 							continue linkLoop;
 						}
 					}
 				
-					if (this.historyService.isVisitedURL(link.href) == shouldBeVisited){
-						linkSet.push(link);
+					if (selectAll || this.historyService.isVisitedURL(link.href) == shouldBeVisited){
+						content.document.linkSet.push(link);
 					}
 				}
 			}
 		} while (link);
 		
-		for (var i = 0; i < linkSet.length; i++){
-			link = linkSet[i];
-			
-			link.styleHistory = {};
-			
-			link.styleHistory.borderColor = link.style.borderColor;
-			link.styleHistory.borderStyle = link.style.borderStyle;
-			link.styleHistory.borderWidth = link.style.borderWidth;
-			link.styleHistory.padding = link.style.padding;
-			
-			link.style.borderColor = '#f00';
-			link.style.borderStyle = 'dotted';
-			link.style.borderWidth = '3px';
-			link.style.padding = '3px';
+		for (var i = 0; i < content.document.linkSet.length; i++){
+			this.toggleLinkToBeOpened(content.document.linkSet[i]);
 		}
 		
-		var confirmString = (linkSet.length == 1) ? this.strings.getString("linksLikeThis.confirmOpenSingle") : this.strings.getFormattedString("linksLikeThis.confirmOpenMultiple", [ linkSet.length ]); 
+		content.document.shouldHavePanel = true;
+		this.showPopup();
+	},
+	
+	hidePopup : function () {
+		// content.document.body.removeEventListener("click", LINKSLIKETHIS.linkEventHandler, true);
 		
-		if (confirm(confirmString)) {
-			for (var i = 0; i < linkSet.length; i++){
-				gBrowser.addTab(linkSet[i].href);
-			}
+		document.getElementById("links-like-this-confirmation").hidePopup();
+	},
+	
+	showPopup : function () {
+		// content.document.body.addEventListener("click", LINKSLIKETHIS.linkEventHandler, true);
+		
+		var numLinks = content.document.linkSet.length;
+		
+		if (numLinks > 1) {
+			document.getElementById("llt-num-links").value = "Open the " + numLinks + " highlighted links in tabs?";
 		}
 		else {
-			for (var i = 0; i < linkSet.length; i++){
-				link = linkSet[i];
-				
-				link.style.borderColor = link.styleHistory.borderColor;
-				link.style.borderStyle = link.styleHistory.borderStyle;
-				link.style.borderWidth = link.styleHistory.borderWidth;
-				link.style.padding = link.styleHistory.padding;
-			}
+			document.getElementById("llt-num-links").value = "Open the highlighted link in a new tab?";
 		}
+		
+		document.getElementById("links-like-this-confirmation").openPopup(
+				document.getElementById("content"), 
+				"overlap",
+				Math.floor(content.window.innerWidth / 2) - 100,
+				25,
+				false,
+				false);
+	},
+	
+	checkForPanel : function () {
+		this.hidePopup();
+		
+		if (content.document.shouldHavePanel) {
+			this.showPopup();
+		}
+	},
+	
+	cancelOpen : function () {
+		content.document.shouldHavePanel = false;
+		
+		this.hidePopup();
+		
+		for (var i = 0; i < content.document.linkSet.length; i++){
+			this.toggleLinkToBeOpened(content.document.linkSet[i]);
+		}
+	},
+	
+	confirmOpen : function (limit) {
+		var browser = getBrowser();
+		
+		if (typeof limit != 'undefined') {
+			limit = Math.min(limit, content.document.linkSet.length);
+		}
+		else {
+			limit = content.document.linkSet.length;
+		}
+		
+		for (var i = 0; i < limit; i++){
+			browser.addTab(content.document.linkSet[i].href);
+		}
+		
+		LINKSLIKETHIS.cancelOpen();
+	},
+	
+	less : function () {
+	},
+	
+	more : function () {
 	},
 	
 	getStyle : function (oElm, strCssRule){
