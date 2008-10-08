@@ -8,12 +8,12 @@
                    em:maxVersion="3.1b1pre" />
   <RDF:Description RDF:about="rdf:#$zJZDy2"
                    em:id="{a463f10c-3994-11da-9945-000d60ca027b}"
-                   em:minVersion="1.0"
-                   em:maxVersion="1.2.*" />
+                   em:minVersion="2.0"
+                   em:maxVersion="2.0.*" />
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="links-like-this@efinke.com"
                    em:name="Links Like This"
-                   em:version="1.2"
+                   em:version="1.2.1"
                    em:description="Opens sets of similar links."
                    em:creator="Christopher Finke"
                    em:homepageURL="http://www.chrisfinke.com/addons/links-like-this/">

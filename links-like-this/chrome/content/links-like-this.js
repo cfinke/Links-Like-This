@@ -20,7 +20,9 @@
 		
 		var theNode = gContextMenu.target;
 		
-		while (theNode != content.document.body && theNode.nodeName != 'A') {
+		content.document.lltDocument = theNode.ownerDocument;
+		
+		while (theNode.nodeName != 'BODY' && theNode.nodeName != 'A') {
 			theNode = theNode.parentNode;
 		}
 		
@@ -29,7 +31,7 @@
 				return;
 			}
 			
-			content.document.modelNode = theNode;
+			content.document.lltDocument.modelNode = theNode;
 			
 			var menu = document.getElementById("contentAreaContextMenu");
 			
@@ -81,8 +83,7 @@
 			link.style.backgroundColor = '#ff6';
 			
 			if (modifyLinkSet) {
-				content.document.linkSet.push(link);
-				alert(content.document.linkSet);
+				content.document.lltDocument.linkSet.push(link);
 			}
 		}
 		
@@ -96,7 +97,7 @@
 		
 		selectAll = false;
 
-		var m = content.document.modelNode;
+		var m = content.document.lltDocument.modelNode;
 		
 		var contextNode = m;
 		
@@ -104,7 +105,7 @@
 			contextNode = contextNode.parentNode;
 		}
 		
-		content.document.linkSet = [];
+		content.document.lltDocument.linkSet = [];
 		
 		var xpath = "//";
 		
@@ -132,7 +133,7 @@
 			}
 		}
 		
-		var links = content.document.evaluate(xpath, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+		var links = content.document.lltDocument.evaluate(xpath, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 		
 		var stylePoints = {};
 		stylePoints["font-size"] = this.getStyle(m, "font-size");
@@ -150,24 +151,24 @@
 						}
 					}
 				
-					for (var i = 0; i < content.document.linkSet.length; i++){
-						if (content.document.linkSet[i].href == link.href) {
+					for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
+						if (content.document.lltDocument.linkSet[i].href == link.href) {
 							continue linkLoop;
 						}
 					}
 				
 					if (selectAll || this.historyService.isVisitedURL(link.href) == shouldBeVisited){
-						content.document.linkSet.push(link);
+						content.document.lltDocument.linkSet.push(link);
 					}
 				}
 			}
 		} while (link);
 		
-		for (var i = 0; i < content.document.linkSet.length; i++){
-			this.toggleLinkToBeOpened(content.document.linkSet[i]);
+		for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
+			this.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
 		}
 		
-		content.document.shouldHavePanel = true;
+		content.document.lltDocument.shouldHavePanel = true;
 		this.showPopup();
 	},
 	
@@ -180,7 +181,7 @@
 	showPopup : function () {
 		// content.document.body.addEventListener("click", LINKSLIKETHIS.linkEventHandler, true);
 		
-		var numLinks = content.document.linkSet.length;
+		var numLinks = content.document.lltDocument.linkSet.length;
 		
 		if (numLinks > 1) {
 			document.getElementById("llt-num-links").value = "Open the " + numLinks + " highlighted links in tabs?";
@@ -201,18 +202,18 @@
 	checkForPanel : function () {
 		this.hidePopup();
 		
-		if (content.document.shouldHavePanel) {
+		if (content.document.lltDocument && content.document.lltDocument.shouldHavePanel) {
 			this.showPopup();
 		}
 	},
 	
 	cancelOpen : function () {
-		content.document.shouldHavePanel = false;
+		content.document.lltDocument.shouldHavePanel = false;
 		
 		this.hidePopup();
 		
-		for (var i = 0; i < content.document.linkSet.length; i++){
-			this.toggleLinkToBeOpened(content.document.linkSet[i]);
+		for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
+			this.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
 		}
 	},
 	
@@ -220,14 +221,14 @@
 		var browser = getBrowser();
 		
 		if (typeof limit != 'undefined') {
-			limit = Math.min(limit, content.document.linkSet.length);
+			limit = Math.min(limit, content.document.lltDocument.linkSet.length);
 		}
 		else {
-			limit = content.document.linkSet.length;
+			limit = content.document.lltDocument.linkSet.length;
 		}
 		
 		for (var i = 0; i < limit; i++){
-			browser.addTab(content.document.linkSet[i].href);
+			browser.addTab(content.document.lltDocument.linkSet[i].href);
 		}
 		
 		LINKSLIKETHIS.cancelOpen();
@@ -241,8 +242,8 @@
 	
 	getStyle : function (oElm, strCssRule){
 		var strValue = "";
-		if(content.document.defaultView && content.document.defaultView.getComputedStyle){
-			strValue = content.document.defaultView.getComputedStyle(oElm, "").getPropertyValue(strCssRule);
+		if(content.document.lltDocument.defaultView && content.document.lltDocument.defaultView.getComputedStyle){
+			strValue = content.document.lltDocument.defaultView.getComputedStyle(oElm, "").getPropertyValue(strCssRule);
 		}
 		else if(oElm.currentStyle){
 			strCssRule = strCssRule.replace(/-(w)/g, function (strMatch, p1){
