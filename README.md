@@ -1,0 +1,3 @@
+Links Like This is an extension that helps you to open sets of similar links in tabs at once. It works by having you right-click on one link from the set (like a Google search result link) and selecting "Open Links Like This..."
+
+The extension then determines what the other links in the set are based on their position in the page and relative text size. It will outline the links in the set and ask you to confirm the set before opening them in order to avoid opening far more links than you may want.
