@@ -1,0 +1,1 @@
+pref("extensions.links-like-this@efinke.com.description", "chrome://links-like-this/locale/locale.properties");

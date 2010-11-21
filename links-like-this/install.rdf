@@ -1,23 +1,22 @@
 <?xml version="1.0"?>
-<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
-         xmlns:NC="http://home.netscape.com/NC-rdf#"
-         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <RDF:Description RDF:about="rdf:#$uJZDy2"
-                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="3.0"
-                   em:maxVersion="3.1b3pre" />
-  <RDF:Description RDF:about="rdf:#$zJZDy2"
-                   em:id="{a463f10c-3994-11da-9945-000d60ca027b}"
-                   em:minVersion="2.0"
-                   em:maxVersion="2.0.*" />
-  <RDF:Description RDF:about="urn:mozilla:install-manifest"
-                   em:id="links-like-this@efinke.com"
-                   em:name="Links Like This"
-                   em:version="1.2.1"
-                   em:description="Opens sets of similar links."
-                   em:creator="Christopher Finke"
-                   em:homepageURL="http://www.chrisfinke.com/addons/links-like-this/">
-    <em:targetApplication RDF:resource="rdf:#$uJZDy2"/>
-    <em:targetApplication RDF:resource="rdf:#$zJZDy2"/>
-  </RDF:Description>
-</RDF:RDF>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+	<Description about="urn:mozilla:install-manifest">
+		<em:id>links-like-this@efinke.com</em:id>
+		<em:name>Links Like This</em:name>
+		<em:version>1.3pre</em:version>
+		<em:description>Opens sets of similar links.</em:description>
+		<em:creator>Christopher Finke</em:creator>
+		<em:homepageURL>http://www.chrisfinke.com/addons/links-like-this/</em:homepageURL>
+		
+		<!-- Firefox -->
+		
+		<em:targetApplication>
+			<Description>
+				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+				<em:minVersion>4.0b1</em:minVersion>
+				<em:maxVersion>4.0b8pre</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+		
+	</Description>   
+</RDF>

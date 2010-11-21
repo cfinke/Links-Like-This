@@ -1,14 +1,22 @@
  var LINKSLIKETHIS = {
 	strings : null,
 	
-	init : function () {
-		this.strings = document.getElementById("links-like-this-bundle");
-		this.enableTheseLinks();
+	load : function () {
+		removeEventListener("load", LINKSLIKETHIS.init, false);
+		
+		addEventListener("select", LINKSLIKETHIS.checkForPanel, false);
+		addEventListener("DOMContentLoaded", LINKSLIKETHIS.checkForPanel, false);
+		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", LINKSLIKETHIS.addMenuItem, false);
+		addEventListener("unload", LINKSLIKETHIS.unload, false);
+		
+		LINKSLIKETHIS.strings = document.getElementById("links-like-this-bundle");
 	},
 	
-	enableTheseLinks : function () {
-		var cm = document.getElementById("contentAreaContextMenu");
-		cm.addEventListener("popupshowing", function (event) { LINKSLIKETHIS.addMenuItem(event); }, false);
+	unload : function () {
+		removeEventListener("select", LINKSLIKETHIS.checkForPanel, false);
+		removeEventListener("DOMContentLoaded", LINKSLIKETHIS.checkForPanel, false);
+		document.getElementById("contentAreaContextMenu").removeEventListener("popupshowing", LINKSLIKETHIS.addMenuItem, false);
+		removeEventListener("unload", LINKSLIKETHIS.unload, false);
 	},
 	
 	addMenuItem : function (event) {
@@ -37,29 +45,11 @@
 			
 			var option = document.createElement('menuitem');
 			option.setAttribute("id","links-like-this-option");
-			option.setAttribute("label",this.strings.getString("linksLikeThis.menuOption"));
-			option.setAttribute("accesskey",this.strings.getString("linksLikeThis.menuKey"));
+			option.setAttribute("label",LINKSLIKETHIS.strings.getString("linksLikeThis.menuOption"));
+			option.setAttribute("accesskey",LINKSLIKETHIS.strings.getString("linksLikeThis.menuKey"));
 			option.setAttribute("oncommand","LINKSLIKETHIS.findSimilarLinks();");
 		
 			menu.insertBefore(option, document.getElementById("context-sep-open"));
-		}
-	},
-	
-	linkEventHandler : function (event) {
-		return true;
-		var theNode = event.target;
-		
-		while (theNode != document.body && theNode.nodeName != 'A') {
-			theNode = theNode.parentNode;
-		}
-		
-		if (theNode && theNode.nodeName == 'A') {
-			event.stopPropagation();
-			event.preventDefault();
-		
-			var link = event.target;
-		
-			LINKSLIKETHIS.toggleLinkToBeOpened(theNode, true);
 		}
 	},
 	
@@ -136,9 +126,9 @@
 		var links = content.document.lltDocument.evaluate(xpath, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 		
 		var stylePoints = {};
-		stylePoints["font-size"] = this.getStyle(m, "font-size");
+		stylePoints["font-size"] = LINKSLIKETHIS.getStyle(m, "font-size");
 		
-		var shouldBeVisited = this.historyService.isVisitedURL(m.href);
+		var shouldBeVisited = LINKSLIKETHIS.historyService.isVisitedURL(m.href);
 		
 		linkLoop : do {
 			var link = links.iterateNext();
@@ -146,7 +136,7 @@
 			if (link) {
 				if (link.href){
 					for (var i in stylePoints) {
-						if (this.getStyle(link, i) != stylePoints[i]){
+						if (LINKSLIKETHIS.getStyle(link, i) != stylePoints[i]){
 							continue linkLoop;
 						}
 					}
@@ -157,7 +147,7 @@
 						}
 					}
 				
-					if (selectAll || this.historyService.isVisitedURL(link.href) == shouldBeVisited){
+					if (selectAll || LINKSLIKETHIS.historyService.isVisitedURL(link.href) == shouldBeVisited){
 						content.document.lltDocument.linkSet.push(link);
 					}
 				}
@@ -165,22 +155,18 @@
 		} while (link);
 		
 		for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
-			this.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
+			LINKSLIKETHIS.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
 		}
 		
 		content.document.lltDocument.shouldHavePanel = true;
-		this.showPopup();
+		LINKSLIKETHIS.showPopup();
 	},
 	
 	hidePopup : function () {
-		// content.document.body.removeEventListener("click", LINKSLIKETHIS.linkEventHandler, true);
-		
 		document.getElementById("links-like-this-confirmation").hidePopup();
 	},
 	
 	showPopup : function () {
-		// content.document.body.addEventListener("click", LINKSLIKETHIS.linkEventHandler, true);
-		
 		var numLinks = content.document.lltDocument.linkSet.length;
 		
 		if (numLinks > 1) {
@@ -200,20 +186,21 @@
 	},
 	
 	checkForPanel : function () {
-		this.hidePopup();
-		
 		if (content.document.lltDocument && content.document.lltDocument.shouldHavePanel) {
-			this.showPopup();
+			LINKSLIKETHIS.showPopup();
+		}
+		else {
+			LINKSLIKETHIS.hidePopup();
 		}
 	},
 	
 	cancelOpen : function () {
 		content.document.lltDocument.shouldHavePanel = false;
 		
-		this.hidePopup();
+		LINKSLIKETHIS.hidePopup();
 		
 		for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
-			this.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
+			LINKSLIKETHIS.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
 		}
 	},
 	
@@ -262,8 +249,8 @@
 		
 		isVisitedURL : function(url){
 			try {
-				this.URI = this.ioService.newURI(url, null, null);
-				return this.hService.isVisited(this.URI);
+				LINKSLIKETHIS.historyService.URI = LINKSLIKETHIS.historyService.ioService.newURI(url, null, null);
+				return LINKSLIKETHIS.historyService.hService.isVisited(LINKSLIKETHIS.historyService.URI);
 			} catch (e) {
 				// Malformed URI, probably
 				return false;
