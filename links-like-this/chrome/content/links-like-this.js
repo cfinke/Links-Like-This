@@ -1,4 +1,7 @@
- var LINKSLIKETHIS = {
+Components.utils.import( "resource://gre/modules/PlacesUtils.jsm" );
+Components.utils.import( "resource:///modules/PlacesUIUtils.jsm" );
+
+var LINKSLIKETHIS = {
 	strings : null,
 	
 	load : function () {
@@ -128,38 +131,57 @@
 		var stylePoints = {};
 		stylePoints["font-size"] = LINKSLIKETHIS.getStyle(m, "font-size");
 		
-		var shouldBeVisited = LINKSLIKETHIS.historyService.isVisitedURL(m.href);
-		
-		linkLoop : do {
-			var link = links.iterateNext();
+		PlacesUtils.asyncHistory.isURIVisited(
+			PlacesUIUtils.createFixedURI(m.href),
+			function (uri, shouldBeVisited) {
+				(function checkNextLink() {
+					var link = links.iterateNext();
 			
-			if (link) {
-				if (link.href){
-					for (var i in stylePoints) {
-						if (LINKSLIKETHIS.getStyle(link, i) != stylePoints[i]){
-							continue linkLoop;
+					if (link) {
+						if (link.href){
+							for (var i in stylePoints) {
+								if (LINKSLIKETHIS.getStyle(link, i) != stylePoints[i]){
+									checkNextLink();
+									return;
+								}
+							}
+				
+							for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
+								if (content.document.lltDocument.linkSet[i].href == link.href) {
+									checkNextLink();
+									return;
+								}
+							}
+					
+							if ( selectAll ) {
+								content.document.lltDocument.linkSet.push(link);
+								checkNextLink();
+							}
+							else {
+								PlacesUtils.asyncHistory.isURIVisited(
+									PlacesUIUtils.createFixedURI(link.href),
+									function (uri, visited) {
+										if (visited == shouldBeVisited) {
+											content.document.lltDocument.linkSet.push(link);
+										}
+
+										checkNextLink();
+									}
+								);
+							}
 						}
 					}
-				
-					for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
-						if (content.document.lltDocument.linkSet[i].href == link.href) {
-							continue linkLoop;
+					else {
+						for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
+							LINKSLIKETHIS.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
 						}
+
+						content.document.lltDocument.shouldHavePanel = true;
+						LINKSLIKETHIS.showPopup();
 					}
-				
-					if (selectAll || LINKSLIKETHIS.historyService.isVisitedURL(link.href) == shouldBeVisited){
-						content.document.lltDocument.linkSet.push(link);
-					}
-				}
+				})();
 			}
-		} while (link);
-		
-		for (var i = 0; i < content.document.lltDocument.linkSet.length; i++){
-			LINKSLIKETHIS.toggleLinkToBeOpened(content.document.lltDocument.linkSet[i]);
-		}
-		
-		content.document.lltDocument.shouldHavePanel = true;
-		LINKSLIKETHIS.showPopup();
+		);
 	},
 	
 	hidePopup : function () {
@@ -239,22 +261,5 @@
 			strValue = oElm.currentStyle[strCssRule];
 		}
 		return strValue;
-	},
-	
-	historyService : {
-		hService : Components.classes["@mozilla.org/browser/global-history;2"].getService(Components.interfaces.nsIGlobalHistory2),
-		ioService : Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService),
-		
-		URI : null,
-		
-		isVisitedURL : function(url){
-			try {
-				LINKSLIKETHIS.historyService.URI = LINKSLIKETHIS.historyService.ioService.newURI(url, null, null);
-				return LINKSLIKETHIS.historyService.hService.isVisited(LINKSLIKETHIS.historyService.URI);
-			} catch (e) {
-				// Malformed URI, probably
-				return false;
-			}
-		}
-	},
+	}
 }
