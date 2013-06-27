@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>links-like-this@efinke.com</em:id>
 		<em:name>Links Like This</em:name>
-		<em:version>1.3pre</em:version>
+		<em:version>2</em:version>
 		<em:description>Opens sets of similar links.</em:description>
 		<em:creator>Christopher Finke</em:creator>
 		<em:homepageURL>http://www.chrisfinke.com/addons/links-like-this/</em:homepageURL>
